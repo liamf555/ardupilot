@@ -81,6 +81,23 @@ void RC_Channel_Plane::init_aux_function(const RC_Channel::aux_func_t ch_option,
 }
 }
 
+void RC_Channel_Plane::do_aux_function_experimental_enable(const aux_switch_pos_t ch_flag)
+{
+    switch (ch_flag) {
+        case HIGH: {
+            // Enable
+            break;
+        }
+        case MIDDLE:
+            // nothing
+            break;
+        case LOW: {
+            // Disable
+            break;
+        }
+    }
+}
+
 // do_aux_function - implement the function invoked by auxillary switches
 void RC_Channel_Plane::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
