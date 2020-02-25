@@ -366,6 +366,7 @@ void Plane::stabilize()
         // reset steering controls
         steer_state.locked_course = false;
         steer_state.locked_course_err = 0;
+        SRV_Channels::set_output_scaled(SRV_Channel::k_sweep, 0);
         return;
     }
     float speed_scaler = get_speed_scaler();
@@ -412,16 +413,27 @@ void Plane::stabilize()
         }
         stabilize_roll(speed_scaler);
         if( experimental_mode_enabled ) {
-            // Update based on ML rates
-            const float stabilzeLoopPeriod = 0.0025; // = 400 Hz
-            int16_t elevatorOutput = SRV_Channels::get_output_scaled(SRV_Channel::k_elevator);
-            //elevatorOutput += elev_rate * stabilzeLoopPeriod;
-            elevatorOutput = g2.mlController.get_elevator_output(stabilzeLoopPeriod);
-            SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevatorOutput);
-            gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Elevator set to %i", elevatorOutput);
+            // Update elevator and sweep based on ML rates
+            // This loop doesn't seem to be happening at the 400Hz prescribed...
+            float timeSinceUpdate = 0.001 * (millis() - g2.mlController.lastControlTime); // (seconds)
+            int16_t elevatorOutput = g2.mlController.get_elevator_output(timeSinceUpdate);
+			int16_t sweepOutput = g2.mlController.get_sweep_output(timeSinceUpdate);
+            SRV_Channels::set_output_pwm(SRV_Channel::k_elevator, elevatorOutput);
+            SRV_Channels::set_output_pwm(SRV_Channel::k_sweep, sweepOutput);
+#ifdef MLDEBUG
+			gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] k_sweep is %i", SRV_Channel::k_sweep);
+            gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Elevator set to %i @ %i", elevatorOutput, timeSinceUpdate);
+			gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Sweep set to %i @ %i", sweepOutput, timeSinceUpdate);
+#endif
+            g2.mlController.lastControlTime = millis();
         }
-        else { // Run the standard stabiliser & reset mlController
-            stabilize_pitch(speed_scaler);
+        else { 
+			// Reset sweep to zero
+			SRV_Channels::set_output_scaled(SRV_Channel::k_sweep, 0);
+			// Run the standard stabiliser 
+			stabilize_pitch(speed_scaler);
+			// Reset the mlController
+			g2.mlController.reset();
         }
         if (g.stick_mixing == STICK_MIXING_DIRECT || control_mode == &mode_stabilize) {
             stabilize_stick_mixing_direct();

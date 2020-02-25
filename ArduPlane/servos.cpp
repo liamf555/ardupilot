@@ -540,7 +540,16 @@ void Plane::set_servos_flaps(void)
     }    
 
     // output to flaperons, if any
-    flaperon_update(auto_flap_percent);
+		if(experimental_mode_enabled) {
+			// Compensate flaperon output for AoA
+			float aoa = ahrs.pitch_sensor/100.0;// (deg) //getAOA(); // (deg)
+			// flap_percent = 100 -> full span ~45deg?
+			float deg2flapPct = 2.222; // = (100/45)
+			float flapPct = constrain_float(-deg2flapPct*aoa,-50,0);
+			flaperon_update(flapPct);
+		} else {
+    	flaperon_update(auto_flap_percent);
+		}
 }
 
 #if LANDING_GEAR_ENABLED == ENABLED

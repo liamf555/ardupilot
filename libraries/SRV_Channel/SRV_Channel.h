@@ -147,6 +147,7 @@ public:
         k_LED_neopixel2         = 121,
         k_LED_neopixel3         = 122,
         k_LED_neopixel4         = 123,
+        k_sweep                 = 124, // NB: Overridden in more recent AP versions
         k_nr_aux_servo_functions         ///< This must be the last enum value (only add new values _before_ this one)
     } Aux_servo_function_t;
 

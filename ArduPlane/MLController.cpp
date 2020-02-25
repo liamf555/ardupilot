@@ -16,7 +16,7 @@ const struct AP_Param::GroupInfo MLController::var_info[] = {
     // @Range: 0 inf
     // @Increment: 0.1
     // @User: User
-	AP_GROUPINFO("OUT2DEG", 1, MLController, output2deg, 1.0),
+	AP_GROUPINFO("OUT2DEG", 1, MLController, output2deg, 0.01),
 	
 	// @Param: MLCTRL_DEG2OUT
     // @DisplayName: Inverse output conversion factor
@@ -24,7 +24,7 @@ const struct AP_Param::GroupInfo MLController::var_info[] = {
 	// @Range: 0 inf
     // @Increment: 0.1
     // @User: User
-	AP_GROUPINFO("DEG2OUT", 2, MLController, deg2output, 1.0),
+	AP_GROUPINFO("DEG2OUT", 2, MLController, deg2output, 100.0),
 	
 	AP_GROUPEND
 	};
@@ -32,11 +32,14 @@ const struct AP_Param::GroupInfo MLController::var_info[] = {
 MLController::MLController()
 	: elev_rate(0.0),
 	  elevatorAngle(0.0),
+	  sweep_rate(0.0),
+	  sweepAngle(0.0),
 	  agent_system(-1),
 	  agent_component(-1),
 	  agent_channel(mavlink_channel_t(-1)),
 	  lookupSuccess(false),
-	  elevatorAngleUninitialised(true)
+	  elevatorAngleUninitialised(true),
+	  sweepAngleUninitialised(true)
 	{
 	}
 
@@ -102,19 +105,31 @@ void MLController::send_state() {
 
 void MLController::reset() {
 	elevatorAngleUninitialised = true;
+	sweepAngleUninitialised = true;
+	lastControlTime = millis();
 	}
 
+// For elevator:
+// angle_type = true; high_out is set to 4500
+// Scaled value is constrained in range [-4500,4500]
+// +-4500 is at limits of servo range with 0 on trim point
+// For a 90deg servo deflection, this gives out2deg = 0.01, so deg2out = 100.0
 
 int16_t MLController::get_elevator_output(float timestep) {
 	if( elevatorAngleUninitialised ) {
 		// Don't have current elevatorAngle, get it
-		int16_t elevatorOutput = SRV_Channels::get_output_scaled(SRV_Channel::k_elevator);
+		uint16_t elevatorOutput;
+		if( !SRV_Channels::get_output_pwm(SRV_Channel::k_elevator,elevatorOutput) ) {
+			// Couldn't get current angle
+			gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] Could not initialise elevator angle");
+			return 1500; // Return something near trim
+			}
 		// Convert to angle
-		elevatorAngle = elevatorOutput * output2deg;
+		elevatorAngle = (float(elevatorOutput) - 1436) / 18.036;
 		elevatorAngleUninitialised = false;
 		}
 #ifdef MLDEBUG
-	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Output: %i Angle: %f", elevatorOutput, elevatorAngle);
+	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Initial elevator angle: %f", elevatorAngle);
 #endif
 	// Compute updated angle
 	elevatorAngle = elevatorAngle + elev_rate * timestep;
@@ -122,8 +137,24 @@ int16_t MLController::get_elevator_output(float timestep) {
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Angle: %f Return %i", elevatorAngle, int16_t(elevatorAngle*deg2output));
 #endif
 	// Convert to scaled output
-	return elevatorAngle * deg2output;
-	// Rounding could stop the output from changing...
+	return 18.036 * elevatorAngle + 1436;
+	}
+
+int16_t MLController::get_sweep_output(float timestep) {
+	if( sweepAngleUninitialised ) {
+		sweepAngle = 0.0;
+		sweepAngleUninitialised = false;
+		}
+#ifdef MLDEBUG
+	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Initial sweep angle: %f", sweepAngle);
+#endif
+	// Compute updated angle
+	sweepAngle = sweepAngle + sweep_rate * timestep;
+#ifdef MLDEBUG
+	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Angle: %f Return %i", sweepAngle, int16_t(sweepAngle*deg2output));
+#endif
+	// Convert to PWM output
+	return (sweepAngle - 94.18137) / -0.06297;
 	}
 
 void MLController::handle_message(mavlink_message_t* message) {
@@ -132,4 +163,5 @@ void MLController::handle_message(mavlink_message_t* message) {
 	
 	// Update rate based on message from agent
 	elev_rate = action_msg.elevator;
+	sweep_rate = action_msg.sweep;
 	}

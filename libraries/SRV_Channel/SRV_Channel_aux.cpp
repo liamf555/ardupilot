@@ -132,6 +132,9 @@ void SRV_Channel::aux_servo_function_setup(void)
         // fixed wing throttle
         set_range(100);
         break;
+    case k_sweep:
+        set_angle(4500);
+        break;
     default:
         break;
     }
