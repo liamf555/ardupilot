@@ -48,7 +48,7 @@ void MLController::lookup_agent() {
 #ifdef MLDEBUG
 	gcs().send_text(MAV_SEVERITY_INFO, "Doing lookup...");
 #endif
-	lookupSuccess = gcs().chan(0).find_by_mavtype(MAV_TYPE_ONBOARD_CONTROLLER, agent_system, agent_component, agent_channel);
+	lookupSuccess = gcs().chan(0)->find_by_mavtype(MAV_TYPE_ONBOARD_CONTROLLER, agent_system, agent_component, agent_channel);
 	}
 
 void MLController::send_state() {
@@ -167,9 +167,9 @@ int16_t MLController::get_sweep_output(float timestep) {
 	return (sweepAngle - 94.18137) / -0.06297;
 	}
 
-void MLController::handle_message(mavlink_message_t* message) {
+void MLController::handle_message(const mavlink_message_t& message) {
 	mavlink_mlagent_action_t action_msg;
-	mavlink_msg_mlagent_action_decode(message, &action_msg);
+	mavlink_msg_mlagent_action_decode(&message, &action_msg);
 	
 	// Update rate based on message from agent
 	elev_rate = action_msg.elevator;

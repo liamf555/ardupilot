@@ -71,6 +71,6 @@ class MLController {
 		int16_t get_sweep_output(float timestep);
 		
 		// Process incoming message from ML agent
-		void handle_message(mavlink_message_t* message);
+		void handle_message(const mavlink_message_t& message);
 		
 	};
