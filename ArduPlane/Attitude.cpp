@@ -411,15 +411,16 @@ void Plane::stabilize()
             stabilize_stick_mixing_fbw();
         }
         stabilize_roll(speed_scaler);
-        if( experimental_mode ) {
+        if( experimental_mode_enabled ) {
             // Update based on ML rates
             const float stabilzeLoopPeriod = 0.0025; // = 400 Hz
             int16_t elevatorOutput = SRV_Channels::get_output_scaled(SRV_Channel::k_elevator);
             //elevatorOutput += elev_rate * stabilzeLoopPeriod;
-            elevatorOutput = mlController.get_elevator_output(stabilzeLoopPeriod);
+            elevatorOutput = g2.mlController.get_elevator_output(stabilzeLoopPeriod);
             SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevatorOutput);
+            gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Elevator set to %i", elevatorOutput);
         }
-        else { // Run the standard stabiliser
+        else { // Run the standard stabiliser & reset mlController
             stabilize_pitch(speed_scaler);
         }
         if (g.stick_mixing == STICK_MIXING_DIRECT || control_mode == &mode_stabilize) {

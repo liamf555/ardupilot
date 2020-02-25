@@ -777,15 +777,15 @@ private:
     AP_Tuning_Plane tuning;
 
     // Boolean for experimental mode is enable status
-    bool experimental_mode = false;
+    bool experimental_mode_enabled = false;
 
     static const struct LogStructure log_structure[];
 
     // rudder mixing gain for differential thrust (0 - 1)
     float rudder_dt;
-
-	MLController mlController;
-    void update_ml_agent(void);
+    
+    void update_ml_controller(void);
+    void experimental_mode(bool enable);
 
     void adjust_nav_pitch_throttle(void);
     void update_load_factor(void);

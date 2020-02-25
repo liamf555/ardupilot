@@ -106,7 +106,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
 #if LANDING_GEAR_ENABLED == ENABLED
     SCHED_TASK(landing_gear_update, 5, 50),
 #endif
-	SCHED_TASK(update_ml_agent,        10,    100),
+	SCHED_TASK(update_ml_controller,   10,    100),
 };
 
 constexpr int8_t Plane::_failsafe_priorities[7];

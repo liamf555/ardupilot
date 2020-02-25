@@ -2,6 +2,8 @@
 
 #include <AP_Common/AP_Common.h>
 
+#include "MLController.h"
+
 // Global parameter class.
 //
 class Parameters {
@@ -564,6 +566,9 @@ public:
     AP_Int8 crow_flap_weight_inner;
     AP_Int8 crow_flap_options;
     AP_Int8 crow_flap_aileron_matching;
+    
+    // ML Controller
+    MLController mlController;
 };
 
 extern const AP_Param::Info var_info[];

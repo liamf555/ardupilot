@@ -1331,6 +1331,10 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
     case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT:
         plane.adsb.handle_message(chan, msg);
         break;
+    
+    case MAVLINK_MSG_ID_MLAGENT_ACTION:
+        plane.g2.mlController.handle_message(msg);
+        break;
 
     default:
         handle_common_message(msg);

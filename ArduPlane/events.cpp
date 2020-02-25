@@ -6,6 +6,7 @@ void Plane::failsafe_short_on_event(enum failsafe_state fstype, ModeReason reaso
     failsafe.state = fstype;
     failsafe.short_timer_ms = millis();
     gcs().send_text(MAV_SEVERITY_WARNING, "Failsafe. Short event on: type=%u/reason=%u", fstype, static_cast<unsigned>(reason));
+    experimental_mode(false); // On loss of control signal, exit experimental mode
     switch (control_mode->mode_number())
     {
     case Mode::Number::MANUAL:
@@ -69,6 +70,7 @@ void Plane::failsafe_long_on_event(enum failsafe_state fstype, ModeReason reason
 {
     // This is how to handle a long loss of control signal failsafe.
     gcs().send_text(MAV_SEVERITY_WARNING, "Failsafe. Long event on: type=%u/reason=%u", fstype, static_cast<unsigned>(reason));
+    experimental_mode(false); // On loss of control signal, disable experimental mode
     //  If the GCS is locked up we allow control to revert to RC
     RC_Channels::clear_overrides();
     failsafe.state = fstype;
