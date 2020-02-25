@@ -110,6 +110,8 @@
 #include "avoidance_adsb.h"
 #include "AP_Arming.h"
 
+#include "MLController.h"
+
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 #include <SITL/SITL.h>
 #endif
@@ -131,6 +133,7 @@ public:
     friend class GCS_Plane;
     friend class RC_Channel_Plane;
     friend class RC_Channels_Plane;
+    friend class MLController;
 
     friend class Mode;
     friend class ModeCircle;
@@ -780,6 +783,9 @@ private:
 
     // rudder mixing gain for differential thrust (0 - 1)
     float rudder_dt;
+
+	MLController mlController;
+    void update_ml_agent(void);
 
     void adjust_nav_pitch_throttle(void);
     void update_load_factor(void);
