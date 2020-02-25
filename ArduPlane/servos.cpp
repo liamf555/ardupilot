@@ -540,16 +540,22 @@ void Plane::set_servos_flaps(void)
     }    
 
     // output to flaperons, if any
-		if(experimental_mode_enabled) {
-			// Compensate flaperon output for AoA
-			float aoa = ahrs.pitch_sensor/100.0;// (deg) //getAOA(); // (deg)
-			// flap_percent = 100 -> full span ~45deg?
-			float deg2flapPct = 2.222; // = (100/45)
-			float flapPct = constrain_float(-deg2flapPct*aoa,-50,0);
-			flaperon_update(flapPct);
-		} else {
-    	flaperon_update(auto_flap_percent);
-		}
+	if(experimental_mode_enabled && control_mode == &mode_manual) {
+		// Compensate flaperon output for AoA
+		//float aoa = ahrs.pitch_sensor*0.01;// (deg)
+		float aoa = ahrs.getAOA(); // (deg)
+		if( aoa < 0.0 ) { aoa = 0.0; }
+		/* Previously was pwm/deg = 17.756
+		pwm/sv = (500/4500)
+		sv/fp = 45
+		therefore fp/deg = sv/45 = (pwm/(5/45))/45 = (17.756/(5/45))/45 = 3.5512
+		*/
+		float deg2flapPct = 3.5512;
+		float flapPct = constrain_float(-deg2flapPct*aoa,-75,0);
+		flaperon_update(flapPct);
+	} else {
+		flaperon_update(auto_flap_percent);
+	}
 }
 
 #if LANDING_GEAR_ENABLED == ENABLED

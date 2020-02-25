@@ -43,6 +43,9 @@ class MLController {
 	
 		AP_Float output2deg;
 		AP_Float deg2output;
+		
+		//long int actionRecv_ms;
+		//long int stateSend_ms;
 	
 	public:
 		// Parameter info

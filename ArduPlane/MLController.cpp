@@ -52,6 +52,8 @@ void MLController::lookup_agent() {
 	}
 
 void MLController::send_state() {
+	static unsigned int i = 0;
+	
 	// Lookup the agent in the routing table. Caching?
 	lookup_agent();
 	
@@ -61,7 +63,11 @@ void MLController::send_state() {
 	// Fill out structure
 	
 	Vector3f position;
-	plane.ahrs.get_relative_position_NED_home(position); // Result is NED (m) relative to home
+	bool res = plane.ahrs.get_relative_position_NED_origin(position); // Result is NED (m) relative to EKF origin
+	if(!res && (++i % 10) == 0) {
+		gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] EKF position unavailable");
+		//return;
+		}
 	state.x = position.x;
 	state.y = position.y;
 	state.z = position.z;
@@ -85,8 +91,8 @@ void MLController::send_state() {
 	state.q = angular_rates.y;
 	state.r = angular_rates.z;
 
-	state.sweep = 0.0;
-	state.elevator = 0.0;
+	state.sweep = sweepAngleUninitialised ? 0.0 : sweepAngle;
+	state.elevator = elevatorAngleUninitialised ? 0.0 : elevatorAngle;
 	state.tip = 0.0;
 	
 	// Set targets to match looked-up agent
@@ -95,7 +101,9 @@ void MLController::send_state() {
 	
 	// Send message to agent
 	if( lookupSuccess ) {
+		//gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] S: %i A: %i", stateSend_ms, actionRecv_ms);
 		mavlink_msg_mlagent_state_send_struct(agent_channel,&state);
+		//stateSend_ms = millis();
 #ifdef MLDEBUG
 		gcs().send_text(MAV_SEVERITY_INFO, "MLAGENT_STATE sent to %i", agent_channel);
 #endif
@@ -106,6 +114,8 @@ void MLController::send_state() {
 void MLController::reset() {
 	elevatorAngleUninitialised = true;
 	sweepAngleUninitialised = true;
+	sweep_rate = 0.0;
+	elev_rate = 0.0;
 	lastControlTime = millis();
 	}
 
@@ -132,7 +142,7 @@ int16_t MLController::get_elevator_output(float timestep) {
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Initial elevator angle: %f", elevatorAngle);
 #endif
 	// Compute updated angle
-	elevatorAngle = elevatorAngle + elev_rate * timestep;
+	elevatorAngle = constrain_float(elevatorAngle + elev_rate * timestep,-10.0, 10.0);
 #ifdef MLDEBUG
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Angle: %f Return %i", elevatorAngle, int16_t(elevatorAngle*deg2output));
 #endif
@@ -149,7 +159,7 @@ int16_t MLController::get_sweep_output(float timestep) {
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Initial sweep angle: %f", sweepAngle);
 #endif
 	// Compute updated angle
-	sweepAngle = sweepAngle + sweep_rate * timestep;
+	sweepAngle = constrain_float(sweepAngle + sweep_rate * timestep, -10.0, 30.0);
 #ifdef MLDEBUG
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Angle: %f Return %i", sweepAngle, int16_t(sweepAngle*deg2output));
 #endif
@@ -164,4 +174,6 @@ void MLController::handle_message(mavlink_message_t* message) {
 	// Update rate based on message from agent
 	elev_rate = action_msg.elevator;
 	sweep_rate = action_msg.sweep;
+	
+	//actionRecv_ms = millis();
 	}

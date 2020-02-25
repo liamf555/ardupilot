@@ -129,6 +129,8 @@ void SRV_Channel::calc_pwm(int16_t output_scaled)
 
 void SRV_Channel::set_output_pwm(uint16_t pwm)
 {
+	if(pwm > servo_max) { pwm = servo_max; }
+	if(pwm < servo_min) { pwm = servo_min; }
     output_pwm = pwm;
     have_pwm_mask |= (1U<<ch_num);
 }
