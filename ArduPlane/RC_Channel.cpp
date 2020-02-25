@@ -86,6 +86,8 @@ void RC_Channel_Plane::do_aux_function_experimental_enable(const aux_switch_pos_
     switch (ch_flag) {
         case HIGH: {
             // Enable
+            plane.experimental_mode = true;
+            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode enabled.");
             break;
         }
         case MIDDLE:
@@ -93,6 +95,8 @@ void RC_Channel_Plane::do_aux_function_experimental_enable(const aux_switch_pos_
             break;
         case LOW: {
             // Disable
+            plane.experimental_mode = false;
+            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode disabled.");
             break;
         }
     }

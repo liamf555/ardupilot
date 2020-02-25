@@ -773,6 +773,9 @@ private:
     // support for transmitter tuning
     AP_Tuning_Plane tuning;
 
+    // Boolean for experimental mode is enable status
+    bool experimental_mode = false;
+
     static const struct LogStructure log_structure[];
 
     // rudder mixing gain for differential thrust (0 - 1)
