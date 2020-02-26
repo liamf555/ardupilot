@@ -776,7 +776,8 @@ private:
     // support for transmitter tuning
     AP_Tuning_Plane tuning;
 
-    // Boolean for experimental mode is enable status
+    // Booleans for experimental mode is enable status
+	bool allow_experimental_mode = false;
     bool experimental_mode_enabled = false;
 
     static const struct LogStructure log_structure[];
@@ -785,7 +786,7 @@ private:
     float rudder_dt;
     
     void update_ml_controller(void);
-    void experimental_mode(bool enable);
+    bool set_experimental_mode(bool enable);
 
     void adjust_nav_pitch_throttle(void);
     void update_load_factor(void);

@@ -191,6 +191,12 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
                                             cmd.content.do_engine_control.height_delay_cm*0.01f);
         break;
 
+	case MAV_CMD_DO_MLAGENT_CONTROL:
+		// Switch on the ML control mode
+		// Will fail if currently disallowed and proceed to next command
+		return set_experimental_mode(true);
+		break;
+
     default:
         // unable to use the command, allow the vehicle to try the next command
         return false;
@@ -294,6 +300,15 @@ bool Plane::verify_command(const AP_Mission::Mission_Command& cmd)        // Ret
     case MAV_CMD_DO_VTOL_TRANSITION:
     case MAV_CMD_DO_ENGINE_CONTROL:
         return true;
+
+	case MAV_CMD_DO_MLAGENT_CONTROL: {
+		bool isComplete = g2.mlController.is_complete();
+		if( isComplete ) {
+			// Disable experimental_mode, return to AUTO flight
+			set_experimental_mode(false);
+		}
+		return isComplete;
+	}
 
     default:
         // error message

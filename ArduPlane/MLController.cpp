@@ -39,7 +39,8 @@ MLController::MLController()
 	  agent_channel(mavlink_channel_t(-1)),
 	  lookupSuccess(false),
 	  elevatorAngleUninitialised(true),
-	  sweepAngleUninitialised(true)
+	  sweepAngleUninitialised(true),
+	  episodeIsComplete(false)
 	{
 	}
 
@@ -114,6 +115,7 @@ void MLController::send_state() {
 void MLController::reset() {
 	elevatorAngleUninitialised = true;
 	sweepAngleUninitialised = true;
+	episodeIsComplete = false;
 	sweep_rate = 0.0;
 	elev_rate = 0.0;
 	lastControlTime = millis();
@@ -170,10 +172,19 @@ int16_t MLController::get_sweep_output(float timestep) {
 void MLController::handle_message(const mavlink_message_t& message) {
 	mavlink_mlagent_action_t action_msg;
 	mavlink_msg_mlagent_action_decode(&message, &action_msg);
-	
+
+	if( isnan(action_msg.elevator) || isnan(action_msg.sweep) ) {
+		episodeIsComplete = true;
+		return;
+		}
+
 	// Update rate based on message from agent
 	elev_rate = action_msg.elevator;
 	sweep_rate = action_msg.sweep;
 	
 	//actionRecv_ms = millis();
+	}
+
+bool MLController::is_complete() const {
+	return episodeIsComplete;
 	}

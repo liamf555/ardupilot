@@ -85,18 +85,19 @@ void RC_Channel_Plane::do_aux_function_experimental_enable(const aux_switch_pos_
 {
     switch (ch_flag) {
         case HIGH: {
-            // Enable
-            plane.experimental_mode(true);
-            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode enabled.");
+            // Allow MLController to switch to experimental mode
+            plane.allow_experimental_mode = true;
+            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode allowed.");
             break;
         }
         case MIDDLE:
             // nothing
             break;
         case LOW: {
-            // Disable
-            plane.experimental_mode(false);
-            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode disabled.");
+            // Disable immediately and prevent automatic switching
+            plane.set_experimental_mode(false);
+            plane.allow_experimental_mode = false;
+            gcs().send_text(MAV_SEVERITY_NOTICE,"Experimental mode disallowed.");
             break;
         }
     }

@@ -40,7 +40,9 @@ class MLController {
 		bool lookupSuccess;
 		bool elevatorAngleUninitialised;
 		bool sweepAngleUninitialised;
-	
+
+		bool episodeIsComplete;
+
 		AP_Float output2deg;
 		AP_Float deg2output;
 		
@@ -72,5 +74,8 @@ class MLController {
 		
 		// Process incoming message from ML agent
 		void handle_message(const mavlink_message_t& message);
-		
+
+		// Verify if episode is complete
+		bool is_complete() const;
+
 	};
