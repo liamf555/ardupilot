@@ -302,7 +302,7 @@ bool Plane::verify_command(const AP_Mission::Mission_Command& cmd)        // Ret
         return true;
 
 	case MAV_CMD_DO_MLAGENT_CONTROL: {
-		bool isComplete = g2.mlController.is_complete();
+		bool isComplete = (g2.mlController.is_complete() || plane.allow_experimental_mode == false);
 		if( isComplete ) {
 			// Disable experimental_mode, return to AUTO flight
 			set_experimental_mode(false);
