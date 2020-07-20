@@ -482,6 +482,10 @@ void Plane::calc_throttle()
         commanded_throttle = plane.guided_state.forced_throttle;
     }
 
+    if( experimental_mode_enabled ) {
+        commanded_throttle = 0.0;
+    }
+
     SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, commanded_throttle);
 }
 
