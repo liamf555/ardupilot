@@ -246,6 +246,10 @@ bool Plane::set_mode(Mode &new_mode, const ModeReason reason)
         return true;
     }
 
+    // On any mode change, disable experimental mode
+    // Needed for FBW with enable switch abort
+    set_experimental_mode(false);
+
 #if !QAUTOTUNE_ENABLED
     if (&new_mode == &plane.mode_qautotune) {
         gcs().send_text(MAV_SEVERITY_INFO,"QAUTOTUNE disabled");
