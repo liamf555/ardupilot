@@ -426,6 +426,8 @@ void Plane::stabilize()
 			gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Sweep set to %i @ %i", sweepOutput, timeSinceUpdate);
 #endif
             g2.mlController.lastControlTime = millis();
+            // Prevent integrator windup when in ML mode
+            pitchController.reset_I();
         }
         else { 
 			// Reset sweep to zero
