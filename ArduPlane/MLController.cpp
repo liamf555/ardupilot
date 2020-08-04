@@ -144,7 +144,7 @@ int16_t MLController::get_elevator_output(float timestep) {
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Initial elevator angle: %f", elevatorAngle);
 #endif
 	// Compute updated angle
-	elevatorAngle = constrain_float(elevatorAngle + elev_rate * timestep,-10.0, 10.0);
+	elevatorAngle = constrain_float(elevatorAngle + elev_rate * timestep,-20.0, 20.0);
 #ifdef MLDEBUG
 	gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Angle: %f Return %i", elevatorAngle, int16_t(elevatorAngle*deg2output));
 #endif
