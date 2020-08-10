@@ -193,8 +193,22 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
 
 	case MAV_CMD_DO_MLAGENT_CONTROL:
 		// Switch on the ML control mode
-		// Will fail if currently disallowed and proceed to next command
-		return set_experimental_mode(true);
+        if( plane.g2.mlController.in_progress ) {
+            // If is_in_progress flag set, did not exit properly
+            // Reset and continue to next mission item
+            plane.g2.mlController.in_progress = false;
+            gcs().send_text(MAV_SEVERITY_WARNING, "[MLAgent] Attempt to reenter cancelled");
+            return false;
+            }
+        else {
+            plane.g2.mlController.in_progress = true;
+            // Will fail if currently disallowed and proceed to next command
+            bool did_enable = set_experimental_mode(true);
+            if( did_enable ) {
+                gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Entering ML mode");
+                }
+            return did_enable;
+            }
 		break;
 
     default:
@@ -302,9 +316,11 @@ bool Plane::verify_command(const AP_Mission::Mission_Command& cmd)        // Ret
         return true;
 
 	case MAV_CMD_DO_MLAGENT_CONTROL: {
-		bool isComplete = (g2.mlController.is_complete() || plane.allow_experimental_mode == false);
+		bool isComplete = (g2.mlController.is_complete() || (plane.experimental_mode_enabled == false));
 		if( isComplete ) {
 			// Disable experimental_mode, return to AUTO flight
+            g2.mlController.in_progress = false;
+            gcs().send_text(MAV_SEVERITY_WARNING,"[MLAgent] Exiting ML mode")  ;
 			set_experimental_mode(false);
 		}
 		return isComplete;

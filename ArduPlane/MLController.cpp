@@ -40,7 +40,8 @@ MLController::MLController()
 	  lookupSuccess(false),
 	  elevatorAngleUninitialised(true),
 	  sweepAngleUninitialised(true),
-	  episodeIsComplete(false)
+	  episodeIsComplete(false),
+	  in_progress(false)
 	{
 	}
 
@@ -65,7 +66,8 @@ void MLController::send_state() {
 	
 	Vector3f position;
 	bool res = plane.ahrs.get_relative_position_NED_origin(position); // Result is NED (m) relative to EKF origin
-	if(!res && (++i % 10) == 0) {
+	if(!res && (++i % 50) == 0) {
+		i = 0;
 		gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] EKF position unavailable");
 		//return;
 		}
@@ -175,6 +177,7 @@ void MLController::handle_message(const mavlink_message_t& message) {
 
 	if( isnan(action_msg.elevator) || isnan(action_msg.sweep) ) {
 		episodeIsComplete = true;
+		gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Script reports complete");
 		return;
 		}
 

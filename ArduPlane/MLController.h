@@ -55,6 +55,9 @@ class MLController {
 
 		int32_t lastControlTime;
 
+		// Flag to track in_progress state for mode change abort
+		bool in_progress;
+
 		MLController();
 		
 		// Set the agent system, component and channel.
