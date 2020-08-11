@@ -201,10 +201,10 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
             return false;
             }
         else {
-            plane.g2.mlController.in_progress = true;
             // Will fail if currently disallowed and proceed to next command
             bool did_enable = set_experimental_mode(true);
             if( did_enable ) {
+                plane.g2.mlController.in_progress = true;
                 gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Entering ML mode");
                 }
             return did_enable;
