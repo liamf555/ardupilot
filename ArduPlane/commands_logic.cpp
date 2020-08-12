@@ -205,7 +205,10 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
             bool did_enable = set_experimental_mode(true);
             if( did_enable ) {
                 plane.g2.mlController.in_progress = true;
-                gcs().send_text(MAV_SEVERITY_INFO, "[MLAgent] Entering ML mode");
+                gcs().send_text(MAV_SEVERITY_WARNING, "[MLAgent] Entering ML mode");
+                }
+            else {
+                gcs().send_text(MAV_SEVERITY_WARNING, "[MLAgent] ML mode entry not allowed");
                 }
             return did_enable;
             }
