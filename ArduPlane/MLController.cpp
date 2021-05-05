@@ -41,7 +41,8 @@ MLController::MLController()
 	  elevatorAngleUninitialised(true),
 	  sweepAngleUninitialised(true),
 	  episodeIsComplete(false),
-	  in_progress(false)
+	  in_progress(false),
+	  throttleCut(true)
 	{
 	}
 
@@ -121,6 +122,7 @@ void MLController::reset() {
 	sweep_rate = 0.0;
 	elev_rate = 0.0;
 	lastControlTime = millis();
+	throttleCut = false;
 	}
 
 // For elevator:
@@ -181,6 +183,10 @@ void MLController::handle_message(const mavlink_message_t& message) {
 		return;
 		}
 
+	if( action_msg.throttle == 0 ) {
+		throttleCut = true;
+		}
+
 	// Update rate based on message from agent
 	elev_rate = action_msg.elevator;
 	sweep_rate = action_msg.sweep;
@@ -190,4 +196,8 @@ void MLController::handle_message(const mavlink_message_t& message) {
 
 bool MLController::is_complete() const {
 	return episodeIsComplete;
+	}
+
+bool MLController::throttle_is_cut() const {
+	return throttleCut;
 	}
