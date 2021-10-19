@@ -49,6 +49,8 @@ class MLController {
 		// long int actionRecv_ms;
 		// long int stateSend_ms;
 	
+		bool throttleCut;
+
 	public:
 		// Parameter info
 		static const struct AP_Param::GroupInfo var_info[];
@@ -63,7 +65,9 @@ class MLController {
 		// Set the agent system, component and channel.
 		void lookup_agent();
 		
-		// Reset the internal angle representations
+		// Reset the internal state
+		// Called on entry to experimental mode and continuously when ML control not active
+		// On entry may be sufficient
 		void reset();
 		
 		// Send position to agent
@@ -80,5 +84,8 @@ class MLController {
 
 		// Verify if episode is complete
 		bool is_complete() const;
+
+		// Has throttle been cut for current episode
+		bool throttle_is_cut() const;
 
 	};

@@ -484,7 +484,7 @@ void Plane::calc_throttle()
         commanded_throttle = plane.guided_state.forced_throttle;
     }
 
-    if( experimental_mode_enabled ) {
+    if( experimental_mode_enabled && mlController.throttle_is_cut() ) {
         commanded_throttle = 0.0;
     }
 
