@@ -97,16 +97,20 @@ void MLController::send_state() {
 	state.sweep = sweepAngleUninitialised ? 0.0 : sweepAngle;
 	state.elevator = elevatorAngleUninitialised ? 0.0 : elevatorAngle;
 	state.tip = plane.experimental_mode_enabled ? 1.0 : 0.0;
+
+	state.va = plane.airspeed.get_airspeed();
 	
 	// Set targets to match looked-up agent
 	state.target_system = agent_system; // 1 for the aircraft?
 	state.target_component = agent_component; // ?? For the ML agent?
+
+
 	
 	// Send message to agent
 	if( lookupSuccess ) {
-		//gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] S: %i A: %i", stateSend_ms, actionRecv_ms);
+		// gcs().send_text(MAV_SEVERITY_ERROR, "[MLAgent] S: %i A: %i", stateSend_ms, actionRecv_ms);
 			mavlink_msg_mlagent_state_send_struct(agent_channel,&state);
-		//stateSend_ms = millis();
+		// stateSend_ms = millis();
 #ifdef MLDEBUG
 		gcs().send_text(MAV_SEVERITY_INFO, "MLAGENT_STATE sent to %i", agent_channel);
 #endif
@@ -185,7 +189,7 @@ void MLController::handle_message(const mavlink_message_t& message) {
 	elev_rate = action_msg.elevator;
 	sweep_rate = action_msg.sweep;
 	
-	//actionRecv_ms = millis();
+	// actionRecv_ms = millis();
 	}
 
 bool MLController::is_complete() const {
