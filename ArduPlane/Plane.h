@@ -521,6 +521,10 @@ private:
         float roll_rate_dps;
         float pitch_rate_dps;
         float yaw_rate_dps;
+        Vector3f mavlink_rpy_target;
+        Vector3f rpy_target;
+        float mavlink_throttle_target;
+        float throttle_target;
         float throttle_pct;
         uint32_t start_ms;
         uint32_t current_ms;
@@ -538,6 +542,9 @@ private:
         // throttle  commanded from external controller in percent
         float forced_throttle;
         uint32_t last_forced_throttle_ms;
+
+        Vector3l forced_rpy_rate_cd;
+        Vector3l last_forced_rpy_rate_ms;
 
 #if OFFBOARD_GUIDED == ENABLED
         // airspeed adjustments
@@ -859,6 +866,7 @@ private:
     void calc_throttle();
     void calc_nav_roll();
     void calc_nav_pitch();
+    void calc_rpy_rate();
     float calc_speed_scaler(void);
     float get_speed_scaler(void) const { return surface_speed_scaler; }
     bool stick_mixing_enabled(void);
@@ -1138,6 +1146,10 @@ private:
     // command throttle percentage and roll, pitch, yaw target
     // rates. For use with scripting controllers
     void set_target_throttle_rate_rpy(float throttle_pct, float roll_rate_dps, float pitch_rate_dps, float yaw_rate_dps) override;
+    bool get_target_rate_rpy(Vector3f &rpy_target) override;
+    bool get_target_throttle(float &throttle_target) override;
+    
+
     bool nav_scripting_enable(uint8_t mode) override;
 #endif
  

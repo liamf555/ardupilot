@@ -499,7 +499,7 @@ void Plane::stabilize()
 #if AP_SCRIPTING_ENABLED
     } else if ((control_mode == &mode_auto &&
                mission.get_current_nav_cmd().id == MAV_CMD_NAV_SCRIPT_TIME) || (nav_scripting.enabled && nav_scripting.current_ms > 0)) {
-        // scripting is in control of roll and pitch rates and throttle
+        // scripting is in control of roll and pitch rates and throttle_scripting.roll_rate_dps
         const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
         const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
         SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
@@ -708,6 +708,18 @@ void Plane::calc_nav_pitch()
     nav_pitch_cd = constrain_int32(commanded_pitch, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
 }
 
+void Plane::calc_rpy_rate()
+{
+    float speed_scaler = get_speed_scaler();
+ // scripting is in control of roll and pitch rates and throttle
+ 
+    const float aileron = rollController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.x, speed_scaler);
+    const float elevator = pitchController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.y, speed_scaler);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator);
+    const float rudder = yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
+    steering_control.rudder = rudder;
+}
 
 /*
   calculate a new nav_roll_cd from the navigation controller

@@ -1191,6 +1191,31 @@ void Plane::set_target_throttle_rate_rpy(float throttle_pct, float roll_rate_dps
     nav_scripting.current_ms = AP_HAL::millis();
 }
 
+bool Plane::get_target_rate_rpy(Vector3f &rpy_target)
+{
+    if (!nav_scripting_active()) {
+        // not in NAV_SCRIPT_TIME
+        return false;
+    }
+    // const uint32_t now = AP_HAL::millis();
+    // const uint32_t dt = now - nav_scripting.current_ms;
+    // nav_scripting.current_ms = now;
+
+    rpy_target = nav_scripting.mavlink_rpy_target;
+    return true;
+    
+}
+
+bool Plane::get_target_throttle(float &throttle_target)
+{
+    if (!nav_scripting_active()) {
+        // not in NAV_SCRIPT_TIME
+        return false;
+    }
+    throttle_target = nav_scripting.mavlink_throttle_target;
+    return true;
+}
+
 // enable NAV_SCRIPTING takeover in modes other than AUTO using script time mission commands
 bool Plane::nav_scripting_enable(uint8_t mode)
 {

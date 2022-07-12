@@ -137,7 +137,7 @@ segv_*out
 /AntennaTracker/repl/
 /ArduCopter/scripts/
 /ArduCopter/repl/
-/ArduPlane/scripts/
+# /ArduPlane/scripts/
 /ArduPlane/repl/
 /ArduSub/scripts/
 /ArduSub/repl/
