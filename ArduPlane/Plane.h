@@ -532,6 +532,7 @@ private:
     struct {
         // roll pitch yaw commanded from external controller in centidegrees
         Vector3l forced_rpy_cd;
+        Vector3f forced_rpy_rate_cd;
         // last time we heard from the external controller
         Vector3l last_forced_rpy_ms;
 
@@ -858,6 +859,7 @@ private:
     void stabilize();
     void calc_throttle();
     void calc_nav_roll();
+    void calc_nav_rpy_rl();
     void calc_nav_pitch();
     float calc_speed_scaler(void);
     float get_speed_scaler(void) const { return surface_speed_scaler; }

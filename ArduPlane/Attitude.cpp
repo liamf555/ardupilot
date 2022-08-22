@@ -500,12 +500,18 @@ void Plane::stabilize()
     } else if ((control_mode == &mode_auto &&
                mission.get_current_nav_cmd().id == MAV_CMD_NAV_SCRIPT_TIME) || (nav_scripting.enabled && nav_scripting.current_ms > 0)) {
         // scripting is in control of roll and pitch rates and throttle
-        const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
-        const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
+        // const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
+        // const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
+        // gcs().send_text(MAV_SEVERITY_INFO, "Here");
+        
+        const float aileron = rollController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.x, speed_scaler);
+        const float elevator = pitchController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.y, speed_scaler);
+        // gcs().send_text(MAV_SEVERITY_INFO, "aileron: %f elevator: %f", aileron, elevator);
+        gcs().send_text(MAV_SEVERITY_INFO, "aileron: %f elevator: %f", plane.guided_state.forced_rpy_rate_cd.x , plane.guided_state.forced_rpy_rate_cd.y);
         SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
         SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator);
         if (yawController.rate_control_enabled()) {
-            const float rudder = yawController.get_rate_out(nav_scripting.yaw_rate_dps, speed_scaler, false);
+            const float rudder = yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
             steering_control.rudder = rudder;
         }
         if (AP_HAL::millis() - nav_scripting.current_ms > 50) { //set_target_throttle_rate_rpy has not been called from script in last 50ms
@@ -736,6 +742,7 @@ void Plane::calc_nav_roll()
             error = wrap_PI(guided_state.target_heading - atan2f(-groundspeed.y, -groundspeed.x) + M_PI);
         }
 
+
         float bank_limit = degrees(atanf(guided_state.target_heading_accel_limit/GRAVITY_MSS)) * 1e2f;
 
         g2.guidedHeading.update_error(error); // push error into AC_PID , possible improvement is to use update_all instead.?
@@ -755,6 +762,20 @@ void Plane::calc_nav_roll()
 
     nav_roll_cd = constrain_int32(commanded_roll, -roll_limit_cd, roll_limit_cd);
     update_load_factor();
+}
+
+void Plane::calc_nav_rpy_rl()
+{
+    float speed_scaler = get_speed_scaler();
+
+    const float aileron = rollController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.x, speed_scaler);
+    const float elevator = pitchController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.y, speed_scaler);
+    const float rudder = yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
+    gcs().send_text(MAV_SEVERITY_INFO, "calc_nav_rpy_rl: %f %f %f", aileron, elevator, rudder);
+    gcs().send_text(MAV_SEVERITY_INFO, "calc_nav_rpy_rl: %f %f %f", plane.guided_state.forced_rpy_rate_cd.x, plane.guided_state.forced_rpy_rate_cd.y, plane.guided_state.forced_rpy_rate_cd.z);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator);
+    steering_control.rudder = rudder;
 }
 
 /*

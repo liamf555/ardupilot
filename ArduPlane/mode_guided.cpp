@@ -34,6 +34,7 @@ void ModeGuided::update()
 #endif
     plane.calc_nav_roll();
     plane.calc_nav_pitch();
+    // plane.calc_nav_rpy_rl();
     plane.calc_throttle();
 }
 

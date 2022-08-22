@@ -102,7 +102,7 @@ void ModeAuto::update()
         // NAV_SCRIPTING has a desired roll and pitch rate and desired throttle
         plane.nav_roll_cd = plane.ahrs.roll_sensor;
         plane.nav_pitch_cd = plane.ahrs.pitch_sensor;
-        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.nav_scripting.throttle_pct);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.guided_state.forced_throttle);
 #endif
     } else {
         // we are doing normal AUTO flight, the special cases
