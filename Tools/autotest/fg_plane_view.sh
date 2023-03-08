@@ -2,7 +2,12 @@
 
 AUTOTESTDIR=$(dirname $0)
 
-nice fgfs \
+d=$(echo "/home/tu18537/flightgear/install")
+export LD_LIBRARY_PATH=$d/simgear/lib:$d/openscenegraph/lib:$d/openrti/lib:$d/plib/lib${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}
+# cd "$d/flightgear/bin"
+
+# nice fgfs
+exec /home/tu18537/flightgear/install/flightgear/bin/fgfs --fg-root="$d/flightgear/fgdata" "$@" \
     --native-fdm=socket,in,10,,5503,udp \
     --fdm=external \
     --aircraft=Rascal110-JSBSim \

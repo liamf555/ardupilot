@@ -513,6 +513,14 @@ void Plane::stabilize()
         // scripting is in control of roll and pitch rates and throttle
         // const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
         // const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
+        // if init_flag == true {
+        //     nav_scripting.done = false;
+        //     init_flag = false;
+        // }
+
+        // nav_scripting.current_ms = AP_HAL::millis();
+        // gcs().send_text(MAV_SEVERITY_INFO, "x: %f, y: %f, z: %f, throttle: %f", plane.guided_state.forced_rpy_rate_cd.x, plane.guided_state.forced_rpy_rate_cd.y, plane.guided_state.forced_rpy_rate_cd.z, plane.guided_state.forced_throttle);
+
         const float aileron = rollController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.x, speed_scaler);
         const float elevator = pitchController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.y, speed_scaler);
         SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
@@ -522,8 +530,22 @@ void Plane::stabilize()
             const float rudder = yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
             steering_control.rudder = rudder;
         }
-        if (AP_HAL::millis() - nav_scripting.current_ms > 50) { //set_target_throttle_rate_rpy has not been called from script in last 50ms
-            nav_scripting.current_ms = 0;
+        // if (AP_HAL::millis() - nav_scripting.current_ms > 50) { //set_target_throttle_rate_rpy has not been called from script in last 50ms
+        //     nav_scripting.current_ms = 0;
+        // }
+        // gcs().send_text(MAV_SEVERITY_INFO, "current_ms: %d, start_ms: %d", nav_scripting.current_ms, nav_scripting.start_ms);
+        // if (nav_scripting.start_ms > 500) {
+        //     if ((fabs(plane.guided_state.forced_rpy_rate_cd.x) < 0.001 && fabs(plane.guided_state.forced_rpy_rate_cd.y) < 0.001 &&
+        //         fabs(plane.guided_state.forced_rpy_rate_cd.z) < 0.001 && fabs(plane.guided_state.forced_throttle) < 0.001) ||
+        //         (AP_HAL::millis() - plane.guided_state.last_forced_throttle_ms > 500)) {
+        //         nav_scripting.done = true;
+        //         gcs().send_text(MAV_SEVERITY_INFO, "Communication error abort");
+        //     }
+        // }
+
+        if ((millis() - nav_scripting.start_ms > 1000) && (millis() - plane.guided_state.last_forced_throttle_ms > 1000)) {
+            nav_scripting.done = true;
+            gcs().send_text(MAV_SEVERITY_INFO, "Communication error abort");
         }
 #endif
     } else if (control_mode == &mode_acro) {
