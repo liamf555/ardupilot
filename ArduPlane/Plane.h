@@ -528,6 +528,7 @@ private:
     struct {
         // roll pitch yaw commanded from external controller in centidegrees
         Vector3l forced_rpy_cd;
+        Vector3f forced_rpy_rate_cd;
         // last time we heard from the external controller
         Vector3l last_forced_rpy_ms;
 

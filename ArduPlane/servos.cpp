@@ -563,7 +563,8 @@ void Plane::set_servos_controlled(void)
         }
 #if AP_SCRIPTING_ENABLED
     } else if (nav_scripting_active()) {
-            SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.nav_scripting.throttle_pct);
+            // SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.nav_scripting.throttle_pct);
+            SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.guided_state.forced_throttle);
 #endif
     } else if (control_mode == &mode_stabilize ||
                control_mode == &mode_training ||

@@ -364,21 +364,52 @@ void Plane::stabilize()
         plane.control_mode->run();
 #if AP_SCRIPTING_ENABLED
     } else if (nav_scripting_active()) {
+        // gcs().send_text(MAV_SEVERITY_INFO, "NAV_SCRIPTING active");
         // scripting is in control of roll and pitch rates and throttle
+        
+        // const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
+        // const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
+
+
+        // ****** UNCOMMENT FOR RATE CONTROL ***** //
         const float speed_scaler = get_speed_scaler();
-        const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
-        const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
+        const float aileron = rollController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.x, speed_scaler);
+        const float elevator = pitchController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.y, speed_scaler);
         SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
         SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator);
-        if (yawController.rate_control_enabled()) {
-            float rudder = nav_scripting.rudder_offset_pct * 45;
-            if (nav_scripting.run_yaw_rate_controller) {
-                rudder += yawController.get_rate_out(nav_scripting.yaw_rate_dps, speed_scaler, false);
-            } else {
-                yawController.reset_I();
-            }
-            steering_control.rudder = rudder;
-        }
+        // **** UNCOMMENT FOR RATE CONTROL ***** // 
+
+        // gcs().send_text(MAV_SEVERITY_INFO, "NAV_SCRIPTING active: %f %f %f", plane.guided_state.forced_rpy_rate_cd.x, plane.guided_state.forced_rpy_rate_cd.y, plane.guided_state.forced_rpy_rate_cd.z);
+        // gcs().send_text(MAV_SEVERITY_INFO, "Throttle: %f", plane.guided_state.forced_throttle);
+
+        // ****** UNCOMMENT FOR PWM CONTROL ***** //
+        // SRV_Channels::set_output_pwm(SRV_Channel::k_aileron, plane.guided_state.forced_rpy_rate_cd.x);
+        // SRV_Channels::set_output_pwm(SRV_Channel::k_elevator, plane.guided_state.forced_rpy_rate_cd.y);
+        // ****** UNCOMMENT FOR PWM CONTROL ***** //
+
+        // if (yawController.rate_control_enabled()) {
+        //     float rudder = nav_scripting.rudder_offset_pct * 45;
+        //     if (nav_scripting.run_yaw_rate_controller) {
+        //         // rudder += yawController.get_rate_out(nav_scripting.yaw_rate_dps, speed_scaler, false);
+        //         rudder += yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
+        //         gcs().send_text(MAV_SEVERITY_INFO, "Rudder: %f", rudder);
+
+        //     } else {
+        //         yawController.reset_I();
+        //     }
+
+        // ****** UNCOMMENT FOR RATE CONTROL ***** //
+        const float rudder = yawController.get_rate_out(plane.guided_state.forced_rpy_rate_cd.z, speed_scaler, false);
+        steering_control.rudder = rudder;
+        // ****** UNCOMMENT FOR RATE CONTROL ***** //
+
+        // ****** UNCOMMENT FOR PWM CONTROL ***** //
+        // SRV_Channels::set_output_pwm(SRV_Channel::k_rudder, plane.guided_state.forced_rpy_rate_cd.z);
+        // ****** UNCOMMENT FOR PWM CONTROL ***** //
+
+        // gcs().send_text(MAV_SEVERITY_INFO, "Rudder: %f", rudder);
+        // }
+        nav_scripting.current_ms = AP_HAL::millis();
 #endif
     } else {
         plane.control_mode->run();
