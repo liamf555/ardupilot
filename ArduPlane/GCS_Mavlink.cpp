@@ -1269,7 +1269,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
         // if ((attitude_mask & 0b10000010) ||    // partial, including pitch
         //         (attitude_mask == 0b10000000)) { // all angles
         // plane.guided_state.forced_rpy_cd.y = degrees(q.get_euler_pitch()) * 100.0f;
-        plane.guided_state.forced_rpy_rate_cd.x = att_target.body_pitch_rate;
+        plane.guided_state.forced_rpy_rate_cd.y = att_target.body_pitch_rate;
             // Update timer for external pitch to the nav control
         plane.guided_state.last_forced_rpy_ms.y = now;
         // }
@@ -1279,7 +1279,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
             // plane.guided_state.forced_rpy_cd.z = degrees(q.get_euler_yaw()) * 100.0f;
 
             // Update timer for external yaw to the nav control
-        plane.guided_state.forced_rpy_rate_cd.x = att_target.body_yaw_rate;
+        plane.guided_state.forced_rpy_rate_cd.z = att_target.body_yaw_rate;
         plane.guided_state.last_forced_rpy_ms.z = now;
         // }
         // if (att_target.type_mask & 0b01000000) { // throttle
